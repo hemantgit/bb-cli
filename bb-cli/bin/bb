@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+
+Object.assign = Object.assign || require('object-assign'); // fixes https://github.com/vdemedes/ronin/issues/19
+var ronin = require('ronin');
+var path = require('path');
+var chalk = require('chalk');
+var dirname = __dirname.substr(0, 1).toUpperCase() + __dirname.substr(1);
+var program = ronin(path.join(dirname, '..'));
+var util = require('../lib/util');
+var pkg = require('../package.json');
+
+// Changing the limit for listeners, since we work ofter with remote calls
+require('events').EventEmitter.prototype._maxListeners = 100;
+
+program.set({
+    help: function () {
+        util.backbase();
+
+        var title = chalk.bold;
+        var r = '  ' + title('Version') + ': ' + pkg.version;
+        r += '\n\n  ' + title('Usage') + ': bb <command> [OPTIONS]';
+        r += '\n\n  ' + title('Commands') + ': archetype (arch), theme-build, export, import, import-item, import-collection, generate, rest, sync, ln, install, forms.';
+        r += '\n\n';
+        return r;
+    }
+});
+
+try {
+    program.run();
+} catch(e){
+    util.err(chalk.red('Error running command. Please check the stacktrace or the help section "bb -h".\n'));
+    util.err(e.stack);
+}
+
